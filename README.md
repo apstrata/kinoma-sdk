@@ -91,7 +91,7 @@ try {
 Other features
 ==============
 
-** Get the URL of a file stored in your Apstrata application **
+**Get the URL of a file stored in your Apstrata application**
 
 You might need the URL of a file (e.g. image) you attached to an Apstrata document in your Apstrata application. To retrieve this URL, use the getSignedURLToAPI() and methods of the ApstrataClient instance
 

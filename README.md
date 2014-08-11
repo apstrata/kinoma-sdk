@@ -71,7 +71,7 @@ To call an Apstrata API, you just have to invoke the callAPI() method on your Ap
 try {
         // Define a callback function to handle successful cases
     	var onSuccess = function(response) {
-			// do somethig
+			// do something
 		};
 			     
 		// Define a callback function to handle failures     

@@ -51,17 +51,6 @@ var ID = "myDevice"; // Replace with appropriate value
 var PWD = "myPassw0rd"; // Replace with your authentication token
 var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
 ```
-**Option 3. Using a device id (or user id) only**
-
-You might decide to provide the secret (token or password) just before invoking Apstrata. In that case,
-you only need to provide the device (or user) id
-
-```javascript
-var URL = "https://wot.apstrata.com/apsdb/rest"; // Replace with appropriate URL if needed
-var AUTH_KEY = "A7307F650"; // Replace with your Authentication key
-var ID = "myDevice"; // Replace with appropriate value
-var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "url":URL});
-```
 Calling an Apstrata API
 ======================
 
@@ -98,6 +87,33 @@ try {
 }catch(exception){
   	// Handle exception
 }
+```
+Other features
+==============
+
+** Get the URL of a file stored in your Apstrata application **
+
+You might need the URL of a file (e.g. image) you attached to an Apstrata document in your Apstrata application. To retrieve this URL, use the getSignedURLToAPI() and methods of the ApstrataClient instance
+
+```javascript
+var FILE_DOCUMENT_KEY = "27BAF69E55D4CB0769DC441006C6DA2E"; // Replace with the key (identifier) of your document
+var FILE_FIELD_NAME = "apsdb_attachments"; // Replace with the field name that holds the image file
+var FILE_NAME = "file.png"; // Replace with the name of your image file
+
+var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
+
+// Specify the parameters expected by Apstrata's GetFile API
+var requestParams = {
+	
+	"apsdb.documentKey": FILE_DOCUMENT_KEY,
+	"apsdb.store": STORE,
+	"apsdb.fieldName": FILE_FIELD_NAME,
+	"apsdb.fileName": FILE_NAME
+};
+
+var signedURL = apstrataClient.getSignedURLToAPI("GetFile");
+var queryString = apstrataClient.buildQueryString(requestParams);
+signedURL = signedURL + queryString;
 ```
 
 

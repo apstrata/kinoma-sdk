@@ -1,0 +1,624 @@
+<?xml version="1.0" encoding="utf-8"?>
+<program xmlns="http://www.kinoma.com/kpr/1">
+    <script>
+        <![CDATA[
+            			
+   	    	// Replace the below with your Apstrata authentication key
+            var AUTH_KEY = "";
+            
+            // Replace the below with a valid Apstrata id (device or user)
+            var ID = "";
+            
+            // Replace the below with a valid Apstrata password (device or user)
+            var PWD = "";
+            
+            // Replace the below with the URL to your Apstrata cluster
+            var URL = "";
+            
+            // Replace the below with a valid Apstrata authentication token (device or user)
+            // (if you are generating the token yourself, make sure to set "bindReferral" to "false")
+            var TOKEN = "";
+            
+            // Replace the below with the name of your Apstrata store
+            var STORE = "cabstore";
+            
+            // Replace the below with the name of a server-side script you will use in the "testCallToApstrataBusinessLogic" unit test
+            var SCRIPT = "";
+            
+            // Replace the below with the name of a parameter expected by the above SCRIPT, to be used in "testCallToApstrataBusinessLogic"
+            var PARAM_NAME = "";
+            
+            // Replace the below with the value of the above parameter (PARAM_NAME), to be used in "testCallToApstrataBusinessLogic"
+            var PARAM_VALUE = "";
+
+	    // Replace the below with the key of the document that contains an attached file (image file), to be used in testGetFileWithSignedURL
+            var FILE_DOCUMENT_KEY = ""
+            
+            // Replace the below with the name of the field that contains an attached file (image file), to be used in testGetFileWithSignedURL
+            var FILE_FIELD_NAME = "apsdb_attachments";
+            
+            // Replace the below with the name of the attached file (image file), to be used in testGetFileWithSignedURL
+            var FILE_NAME = ""; 
+                        
+            var ApstrataClient = require("apstrataClientModule");            
+            var unitTestSuite = {
+            		
+            		current: -1,  
+            		
+            		// Fill the below with references to your unit test functions, to be defined further in the program          		
+            		tests: [
+            			testCallToApstrataBusinessLogic,
+            			testCallToApstrataBusinessLogicMissingParam,
+            			testCallToApstrataInvalidPassword,
+            			testCallToApstrataClientMissingOperationName,
+            			testCallToApstrataClientMissingParams,
+            			testCallToApstrataBusinessLogicWithToken,
+            			testCreateClientWithMissingId,
+            			testCreateClientWithMissingCredentials,
+            			testCallToApstrataPost,
+            			testGetFileWithSignedURL,
+            			testBase64Signature,
+            			testBase64SignatureNoToken,
+            			testCallToApstrataWithHashedPasswordInConstructor,
+            			testSignaturewithHashedPasswordInParams
+            		],
+            		
+            		next: function() {
+            			
+            			this.current++;
+            			if (this.hasNext()) {            				           				
+            				eval(this.tests[this.current])(this);            				
+            			}
+            		},
+            		
+            		hasNext: function() {
+            		
+            			var done = (this.current == this.tests.length);
+            			return !done;
+            		}
+            };
+            
+            unitTestSuite.next();
+            
+            // Unit test - succeeds if the invocation of the API returns a successful result from the business logic perspective
+            /* IMPORTANT : you need to update this function to use a script that you will provide */
+            function testCallToApstrataBusinessLogic(unitTestSuite) {
+                        	
+            	try {
+    
+    				var onSuccess = function(response) {
+			            	
+		            	if (response.status && response.status == "failure") {
+		            		
+		            		trace("testCallToApstrataBusinessLogic failed. Expected success in business result but was failure\n");
+		            		trace(JSON.stringify(response));
+		            		unitTestSuite.next();
+		            	}else {
+		            	
+		            		trace("testCallToApstrataBusinessLogic passed\n");
+		           			unitTestSuite.next();
+		           		}
+			        };
+			            
+		            var onFailure = function(response) {
+		            
+		            	trace("testCallToApstrataBusinessLogic failed. Expected success in Apstrata response but was failure\n");
+		            	trace(JSON.stringify(response));
+		            	unitTestSuite.next();
+		            };
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
+	            	var params = {
+	            	
+	            		"operation":"RunScript", 
+	            		"requestParams": {
+	            			"apsdb.scriptName": SCRIPT	            			
+	            		},
+	            		"headerAuthentication": false,
+	            		"onSuccess": onSuccess,
+	            		"onFailure": onFailure
+	            	};
+	            	
+	            	params.requestParams[PARAM_NAME] = PARAM_VALUE;	            	
+	            	apstrataClient.callApi(params);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+            // Unit test - succeeds if the invocation of the API returns an unsuccessful result from the business logic perspective
+            function testCallToApstrataBusinessLogicMissingParam(unitTestSuite) {
+           
+           		try {
+    
+					var onSuccess = function(response) {
+		            	
+		            	if (response.status && response.status != "failure") {
+		            		
+		            		trace("testCallToApstrataBusinessLogicMissingParam failed. Expected failure in business\n");
+		            		trace(JSON.stringify(response));
+		            		unitTestSuite.next();
+		            	}else {
+		            	  	trace("testCallToApstrataBusinessLogicMissingParam passed\n");
+		            	  	unitTestSuite.next();
+		            	}
+		            },
+		            
+		            var onFailure = function(response) {
+		            
+		            	trace("testCallToApstrataBusinessLogicMissingParam failed. Expected success in Apstrata response but was failure\n");
+		            	trace(JSON.stringify(response));
+		            	unitTestSuite.next();
+		            }
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
+	            	var params = {
+	            	
+	            		"operation":"RunScript", 
+	            		"requestParams": {
+	            			"apsdb.scriptName": "apstrata.kinoma.api.HandleIntrusionManagement"
+	            		},
+	            		"headerAuthentication": false,
+	            		"onSuccess": onSuccess,
+	            		"onFailure": onFailure
+	            	};
+	            	
+	            	apstrataClient.callApi(params);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+            // Unit test - succeeds if the call to Apstrata fails and error is invalid credentials
+            function testCallToApstrataInvalidPassword(unitTestSuite) {
+           
+           		try {
+    
+					var onSuccess = function(response) {
+		            				            	
+	            		trace("testCallToApstrataInvalidPassword failed. Expected failure when calling Apstrata\n");
+	            		trace(JSON.stringify(response));
+	            		unitTestSuite.next();
+		            },
+		            
+		            var onFailure = function(response) {
+		            
+		            	if (response.errorCode == "INVALID_SIGNATURE") {
+		            		trace("testCallToApstrataInvalidPassword passed\n");
+		            	}else {
+		            		trace("testCallToApstrataInvalidPassword failed. Expected Invalid Credentials as error\n");
+		            	}
+		            	
+		            	unitTestSuite.next();
+		            }
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":"bazzword", "url":URL});
+	            	var params = {
+	            	
+	            		"operation":"RunScript", 
+	            		"requestParams": {
+	            			"apsdb.scriptName": "apstrata.kinoma.api.HandleIntrusionManagement", 
+	            			"event":"intrusionDetected",
+	            		},
+	            		"headerAuthentication": false,
+	            		"onSuccess": onSuccess,
+	            		"onFailure": onFailure
+	            	};
+	            	
+	            	apstrataClient.callApi(params);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+            // Unit test - succeeds if the call to the client throws an invalid parameter exception
+            function testCallToApstrataClientMissingOperationName(unitTestSuite) {
+             
+             	try {
+             	
+             		var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":"bazzword", "url":URL});
+	            	var params = {
+	            		            		
+	            		"apsdb.scriptName": "apstrata.kinoma.api.HandleIntrusionManagement", 
+	            		"requestParams": {
+	            			"event":"intrusionDetected"
+	            		},
+	            		"headerAuthentication": false,
+	            		"onSuccess": {},
+	            		"onFailure": {}
+	            	};
+	            	
+	            	apstrataClient.callApi(params);
+	            	trace("testCallToApstrataClientMissingOperationName failed. Expected exception to occur\n");
+	            	unitTestSuite.next();
+	            }catch(exception){
+	            
+	            	if (exception.errorCode == "MissingParameter") {
+            			trace("testCallToApstrataClientMissingOperationName passed\n");            			
+            		}else {
+            		
+            			trace("testCallToApstrataClientMissingOperationName failed. Expected MissingParameter exception\n");
+            			trace(JSON.stringify(exception));            			
+            		}
+            		
+            		unitTestSuite.next();
+           		}
+            };
+            
+            // Unit test - succeeds if the call to the client throws an invalid parameter exception
+            function testCallToApstrataClientMissingParams(unitTestSuite) {
+             
+             	try {
+             	
+             		var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":"bazzword", "url":URL});
+	            	var params = null;	            	
+	            	apstrataClient.callApi(params);
+	            	trace("testCallToApstrataClientMissingParams failed. Expected exception to occur\n");
+	            	unitTestSuite.next();
+	            }catch(exception){
+	            
+	            	if (exception.errorCode == "MissingParameter") {
+            			trace("testCallToApstrataClientMissingParams passed\n");            			
+            		}else {
+            		
+            			trace("testCallToApstrataClientMissingParams failed. Expected MissingParameter exception\n");
+            			trace(JSON.stringify(exception));            			
+            		}
+            		
+            		unitTestSuite.next();
+           		}
+            };
+            
+             // Unit test - succeeds if the invocation of the API returns a successful result from the business logic perspective
+            function testCallToApstrataBusinessLogicWithToken(unitTestSuite) {
+                        	
+            	try {
+    
+    				var onSuccess = function(response) {
+			            	
+		            	if (response.status && response.status == "failure") {
+		            	
+		            		trace("testCallToApstrataBusinessLogicWithToken failed. Expected success in business result but was failure\n");
+		            		trace(JSON.stringify(response));
+		            		unitTestSuite.next();
+		            	}else {
+		            	
+		            		trace("testCallToApstrataBusinessLogicWithToken passed\n");
+		           			unitTestSuite.next();
+		           		}
+			        };
+			            
+		            var onFailure = function(response) {
+		            
+		            	trace("testCallToApstrataBusinessLogicWithToken failed. Expected success in Apstrata response but was failure\n");
+		            	trace(JSON.stringify(response));
+		            	unitTestSuite.next();
+		            };
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "token":TOKEN, "url":URL});
+	            	var params = {
+	            	
+	            		"operation":"RunScript", 
+	            		"requestParams": {
+	            			"apsdb.scriptName": "apstrata.kinoma.api.HandleIntrusionManagement", 
+	            			"event":"intrusionDetected",
+	            		},
+	            		"headerAuthentication": false,
+	            		"onSuccess": onSuccess,
+	            		"onFailure": onFailure
+	            	};
+	            	
+	            	apstrataClient.callApi(params);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+             // Unit test - succeeds creating an instance of ApstrataClient throws an exception
+            function testCreateClientWithMissingId(unitTestSuite) {
+                        	
+            	try {
+    
+    				var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "token":TOKEN, "url":URL});
+    				trace("testCreateClientWithMissingId failed. Expected exception to occur\n");         		
+	            	unitTestSuite.next();
+	            }catch(exception){
+	            
+	            	if (exception.errorCode == "MissingParameter") {
+	            	
+            			trace("testCreateClientWithMissingId passed\n");
+            			unitTestSuite.next();       			
+            		}else {
+            		
+            			trace("testCreateClientWithMissingId failed. Expected MissingParameter exception\n");
+            			trace(JSON.stringify(exception));
+            			unitTestSuite.next();            			
+            		}
+           		}
+            };
+            
+             // Unit test - succeeds creating an instance of ApstrataClient throws an exception
+            function testCreateClientWithMissingCredentials(unitTestSuite) {
+                        	
+            	try {
+    
+    				var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "url":URL});
+    				trace("testCreateClientWithMissingCredentials failed. Expected exception to occur\n");         		
+	            	unitTestSuite.next();
+	            }catch(exception){
+	            
+	            	if (exception.errorCode == "MissingParameter") {
+	            	
+            			trace("testCreateClientWithMissingCredentials passed\n");
+            			unitTestSuite.next();       			
+            		}else {
+            		
+            			trace("testCreateClientWithMissingCredentials failed. Expected MissingParameter exception\n");
+            			trace(JSON.stringify(exception));
+            			unitTestSuite.next();            			
+            		}
+           		}
+            };
+            
+            // Unit test - succeeds if the invocation of the API returns a document key
+            function testCallToApstrataPost(unitTestSuite) {
+           
+           		try {
+    
+					var onSuccess = function(response) {
+		            	
+		            	if (response.document && response.document.key) {
+		            		trace("testCallToApstrataPost passed\n");
+		            	}else {
+		            	
+		            		trace("testCallToApstrataPost failed. Expected key in response\n");
+		            		trace(JSON.stringify(response));
+		            	}
+		            	
+		            	unitTestSuite.next();
+		            },
+		            
+		            var onFailure = function(response) {
+		            
+		            	trace("testCallToApstrataPost failed. Expected success in Apstrata response but was failure\n");
+		            	trace(JSON.stringify(response));
+		            	unitTestSuite.next();
+		            }
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
+	            	var params = {
+	            	
+	            		"operation":"SaveDocument", 
+	            		"requestParams": {
+	            			"field1": "test",
+	            			"apsdb.store": STORE
+	            		}, 
+	            		"headerAuthentication": false,
+	            		"onSuccess": onSuccess,
+	            		"onFailure": onFailure
+	            	};
+	            	
+	            	apstrataClient.callApi(params);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+            // Unit test - succeeds if the picture.onLoaded() event handler is called before a given time (10sec)
+            function testGetFileWithSignedURL(unitTestSuite) {
+           
+           		try {					
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
+	            	var requestParams = {
+	            		
+	            		"apsdb.documentKey": FILE_DOCUMENT_KEY,
+	            		"apsdb.store": STORE,
+	            		"apsdb.fieldName": FILE_FIELD_NAME,
+	            		"apsdb.fileName": FILE_NAME
+	            	};
+	            	
+	            	var signedURL = apstrataClient.getSignedURLToAPI("GetFile");
+	            	var queryString = apstrataClient.buildQueryString(requestParams);
+	            	signedURL = signedURL + queryString;
+	            	trace(signedURL + "\n");
+	            	var picture = new Picture({left:"0", right:"0", top:"0", bottom:"0"});
+	            	var MyPictureBehavior = function() {};
+	            	MyPictureBehavior.prototype = new Behavior();
+	            	MyPictureBehavior.prototype.constructor = MyPictureBehavior;					
+					MyPictureBehavior.prototype.onLoaded = function(picture) {
+										
+						if (picture.ready) {
+							trace("testGetFileWithSignedURL passed\n");
+						}else {
+							trace("testGetFileWithSignedURL failed\n");
+						}
+							            		
+	            		unitTestSuite.next();
+					}; 
+	            	
+	            	var pictureBehavior =  new MyPictureBehavior();
+	            	picture.behavior = pictureBehavior;	            	
+	            	picture.load(signedURL);	            	
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+             // Unit test - succeeds if the picture.onLoaded() event handler is called before a given time (10sec)
+            function testBase64Signature(unitTestSuite) {
+           
+           		try {					
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "token":TOKEN, "url":URL});
+	            	var requestParams = {
+	            		
+	            		"apsdb.documentKey": FILE_DOCUMENT_KEY,
+	            		"apsdb.store": STORE,
+	            		"apsdb.fieldName": FILE_FIELD_NAME,
+	            		"apsdb.fileName": FILE_NAME
+	            	};
+	            	
+	            	var authorizationB64 = apstrataClient.getSignature({"operation":"SaveDocument", "useToken":true}).signature;
+	            	var authorizationStr = decodeBase64(authorizationB64); 
+	            	var assertTrue = authorizationStr.indexOf(TOKEN) > - 1 && authorizationStr.indexOf(ID) > -1 && authorizationStr.indexOf(AUTH_KEY) > -1;
+	            	if (assertTrue) {
+	            	
+	            		trace("testBase64Signature passed\n");
+	            		unitTestSuite.next();
+	            	}else {
+	            	
+	            		trace("testBase64Signature failed " + authorizationB64 + "/" + authorizationStr + "\n");
+	            		unitTestSuite.next();
+	            	}	            	
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+	        }
+            
+             // Unit test - succeeds if the decoded Base64 authorization containes the auth key, id and token
+            function testBase64Signature(unitTestSuite) {
+           
+           		try {					
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "token":TOKEN, "url":URL});
+	            	var requestParams = {
+	            		
+	            		"apsdb.documentKey": FILE_DOCUMENT_KEY,
+	            		"apsdb.store": STORE,
+	            		"apsdb.fieldName": FILE_FIELD_NAME,
+	            		"apsdb.fileName": FILE_NAME
+	            	};
+	            	
+	            	var authorizationB64 = apstrataClient.getSignature({"operation":"SaveDocument", "useToken":true}).signature;
+	            	var authorizationStr = decodeBase64(authorizationB64); 
+	            	var assertTrue = (AUTH_KEY + "-" + ID + "-" + TOKEN) == authorizationStr;
+	            	if (assertTrue) {
+	            	
+	            		trace("testBase64Signature passed\n");
+	            		unitTestSuite.next();
+	            	}else {
+	            	
+	            		trace("testBase64Signature failed " + authorizationB64 + "/" + authorizationStr + "\n");
+	            		unitTestSuite.next();
+	            	}	            	
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+	        };
+	        
+	         // Unit test - succeeds if getSignature throws a missing parameter exception regarding the token
+            function testBase64SignatureNoToken(unitTestSuite) {
+           
+           		try {					
+		            
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":"1234", "url":URL});
+	            	var requestParams = {
+	            		
+	            		"apsdb.documentKey": FILE_DOCUMENT_KEY,
+	            		"apsdb.store": STORE,
+	            		"apsdb.fieldName": FILE_FIELD_NAME,
+	            		"apsdb.fileName": FILE_NAME
+	            	};
+	            	
+	            	try {
+	            		
+	            		var authorizationB64 = apstrataClient.getSignature({"operation":"SaveDocument", "useToken":true}).signature;
+	            		trace("testBase64SignatureNoToken failed. Expected MissingParameter exception\n");
+	            		unitTestSuite.next();
+	            	}catch(exception) {
+	            	
+	            		if (exception.errorCode == "MissingParameter") {
+	            	
+	            			trace("testBase64SignatureNoToken passed\n");
+	            			unitTestSuite.next();       			
+	            		}else {
+	            		
+	            			trace("testBase64SignatureNoToken failed. Expected MissingParameter exception\n");
+	            			trace(JSON.stringify(exception));
+	            			unitTestSuite.next();            			
+	            		}
+            		}	            	
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+	        };
+	        
+	        // Unit test - succeeds if the call to Apstrata succeeds and returns the expected user 
+            function testCallToApstrataWithHashedPasswordInConstructor(unitTestSuite) {
+           
+           		try {
+    
+					var onSuccess = function(response) {
+		            				            	
+	            		if (response.user.login == ID) {
+	            		
+	            			trace("testCallToApstrataWithHadhedPasswordInConstructor passed.\n");
+	            			unitTestSuite.next();    
+	            		}else {
+	            			trace("testCallToApstrataWithHadhedPasswordInConstructor failed. Expected user " + ID + " but got " + response.user.login + "\n");
+	            			unitTestSuite.next();  
+	            		}
+		            },
+		            
+		            var onFailure = function(response) {
+		            
+		            	trace("testCallToApstrataWithHadhedPasswordInConstructor failed. " + JSON.stringify(response) + "\n");
+	            		unitTestSuite.next();
+		            }
+		            
+		            var hashedPassword = KPR.MD5(PWD).toUpperCase();
+	            	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":hashedPassword, "url":URL, "isHashedPassword": true});
+	            	var params = {
+	            	
+	            		"operation":"GetUser", 
+	            		"requestParams": {
+	            			"login": ID	            			
+	            		},
+	            		"headerAuthentication": false,
+	            		"onSuccess": onSuccess,
+	            		"onFailure": onFailure
+	            	};
+	            	
+	            	apstrataClient.callApi(params);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+            };
+            
+             // Unit test - succeeds if the decoded Base64 authorization containes the auth key, id and token
+            function testSignaturewithHashedPasswordInParams(unitTestSuite) {
+           
+           		try {	         
+		         
+		         	var appBehavior = new Behavior();					
+					appBehavior.onComplete = function(container, message, data) {
+						
+						var dataStr = JSON.stringify(data); 
+						if (dataStr.indexOf(ID) > -1) {
+							
+							trace("testSignaturewithHashedPasswordInParams passed.\n");
+	            			unitTestSuite.next(); 
+						}else {
+							
+							trace("testSignaturewithHashedPasswordInParams failed. " + JSON.stringify(data) + "\n");
+	            			unitTestSuite.next(); 
+						}						
+					};	
+					
+					application.behavior = appBehavior;
+		         	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "url":URL});
+	            	var hashedPassword = KPR.MD5(PWD).toUpperCase();
+	            	var signatureObject = apstrataClient.getSignature({"operation":"GetUser", "id": ID, "password":hashedPassword, "isHashedPassword":true});
+	               	var signatureWithHashedPassword = signatureObject.signature;
+	            	var apstrataServiceUrl = URL + "/" + AUTH_KEY + "/GetUser?apsws.time=" + signatureObject.timestamp + "&apsws.authSig=" + signatureWithHashedPassword + "&apsws.user=" + ID + "&login=" + ID + "&apsws.authMode=simple&apsws.responseType=json"; 
+					var message = new Message(apstrataServiceUrl);
+					application.invoke(message, Message.JSON);
+	            }catch(exception){
+            		trace(JSON.stringify(exception));
+           		}
+	        };
+	        
+        ]]>
+    </script>
+</program>

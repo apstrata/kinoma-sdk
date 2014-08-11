@@ -71,19 +71,19 @@ To call an Apstrata API, you just have to invoke the callAPI() method on your Ap
 try {
         // Define a callback function to handle successful cases
     		var onSuccess = function(response) {
-			     // do somethig
-			  };
+			  	// do somethig
+				};
 			     
-			  // Define a callback function to handle failures     
-		    var onFailure = function(response) {
+		// Define a callback function to handle failures     
+		var onFailure = function(response) {
 		      // do something else    
-  		  };
+  		};
 		        
-		    // Create an instance of the ApstrataClient   
-	      var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "token":TOKEN, "url":URL});
+		// Create an instance of the ApstrataClient   
+	      	var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "token":TOKEN, "url":URL});
 	      
-	      // Prepare the parameters to pass
-	      var params = {
+	      	// Prepare the parameters to pass
+	      	var params = {
 	            	
 	       		"operation":"RunScript", // We assume that we are calling Apstrata's RunScript API
 	       		"requestParams": {

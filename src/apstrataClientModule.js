@@ -181,7 +181,7 @@ ApstrataClient.prototype.getSignedURLToAPI = function(operation) {
 	}
 	
 	var apstrataServiceUrl = this.url + "/" + this.authKey + "/" + operation;
-	var queryParamString = "?apsws.time=" + timeStamp + authenticationSequence + "&apsws.user=" + this.id + "&apsws.responseType=json";
+	var queryParamString = "?apsws.time=" + timeStamp + authenticationSequence + "&apsws.id=" + this.id + "&apsws.responseType=json";
 	return apstrataServiceUrl + queryParamString;
 };
 

@@ -2,7 +2,7 @@
 
 var FAILURE = "failure";
 var SUCCESS = "success";
-var traceOn = false;
+var traceOn = true;
 
 /**
  * @class ApstrataClient
@@ -37,14 +37,6 @@ var ApstrataClient = function(params) {
 			"errorDetail":"You need to provide the Apstrata id of the caller"
 		}
 	}
-	
-	/*if (!params.password && !params.token) {
-		
-		throw {
-			"errorCode": "MissingParameter",
-			"errorDetail":"You need to provide some credentials (password or authentication token)"
-		}
-	}*/
 	
 	this.authKey = params.authKey;
 	this.url = params.url;
@@ -102,12 +94,15 @@ ApstrataClient.prototype.callApi = function(params) {
 	var self = this;
 	containerBehavior.onComplete = function(container, message, data) {
 		
-		if (traceOn) {trace(JSON.stringify(data) + "\n");}
-		var response = self.parseApstrataResponse(data);
-		if (response.type == FAILURE) {
-			params.onFailure(response.result);
-		}else {
-			params.onSuccess(response.result);
+		if (traceOn) {"Message response: " + trace(JSON.stringify(data) + "\n");}
+		if (data) {
+		
+			var response = self.parseApstrataResponse(data);
+			if (response.type == FAILURE) {
+				params.onFailure(response.result);
+			}else {
+				params.onSuccess(response.result);
+			}
 		}
 	};
 	
@@ -120,7 +115,15 @@ ApstrataClient.prototype.callApi = function(params) {
 	}	
 
 	var method = params.method ? params.method : "get";	
-	var apstrataServiceUrl = useHeaderAuthentication ? this.getUnsignedURLToAPI(params.operation) : this.getSignedURLToAPI(params.operation);
+	var apstrataServiceUrl = "";
+	if (useHeaderAuthentication) {
+	
+		apstrataServiceUrl = this.getUnsignedURLToAPI(params.operation);
+		var signatureAndStamp = this.getSignature({"operation": params.operation, "useToken": true});
+		apstrataServiceUrl += "&apsws.time=" + signatureAndStamp.timestamp;
+	}else {
+		apstrataServiceUrl = this.getSignedURLToAPI(params.operation);
+	}
 	
 	// Prepare message content (signed URL + parameter string)
 	var queryParamString = "";
@@ -128,20 +131,24 @@ ApstrataClient.prototype.callApi = function(params) {
 		queryParamString = this.buildQueryString(params.requestParams);
 	}
 	
-	var message = null;
+	if (method == "get") {		
+		apstrataServiceUrl += queryParamString;
+	}
+	
+	var message = null;	
+	message = new Message(apstrataServiceUrl);
+	
+	// Define specific headers according to method and authorization mode to use
 	if (method == "post") {
 		
-		message = new Message(apstrataServiceUrl);
 		message.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		message.requestText = queryParamString;
-	}else {
-		
-		apstrataServiceUrl += queryParamString;
-		message = new Message(apstrataServiceUrl);
 	}
 	
 	if (useHeaderAuthentication) {
-		message.setRequestHeader("authorization", "bearer: " +  this.getSignature({"operation": params.operation, "useToken": true}).signature);
+	
+		message.setRequestHeader("authorization", "bearer " +  signatureAndStamp.signature);
+		if (traceOn){trace("Authorization header: " + message.getRequestHeader("authorization") + "\n");}
 	}
 	
 	message.method = method;
@@ -190,7 +197,7 @@ ApstrataClient.prototype.getSignedURLToAPI = function(operation) {
  */
 ApstrataClient.prototype.getUnsignedURLToAPI = function(operation) {
 
-	return this.url + "/?command=" + operation + "&apsws.responseType=json";
+	return this.url + "/" + operation + "?apsws.responseType=json";
 };
 
 /**
@@ -233,7 +240,7 @@ ApstrataClient.prototype.buildQueryString = function(requestParams) {
  *		timestamp: the timestamp used to sign (needed when building the URL to the Apstrata API)
  * @return {Object} // if generated from authentication token
  * 		signature: the base64 encoding of authKey-id-token
- *		timestamp: ""
+ *		timestamp: the timestamp used to sign (needed when building the URL to the Apstrata API)
  */
 ApstrataClient.prototype.getSignature = function(params) {
 
@@ -272,14 +279,14 @@ ApstrataClient.prototype.getSignature = function(params) {
 		}
 	};
 	
+	var timestamp = new Date().getTime() + "";
 	if (useToken) {
 	
-		var signature = encodeBase64(this.authKey + "-" + id + "-" + token);
-		return {"signature": signature, "timestamp": ""};
+		var signature = encodeBase64(this.authKey + ";" + id + ";" + token);
+		return {"signature": signature, "timestamp": timestamp};
 	}else {
 	
-		var password = this.password ? this.password : params.password;	
-		var timestamp = new Date().getTime() + "";
+		var password = this.password ? this.password : params.password;		
 		var signature = "";
 		var valueToHash = "";
 		var hashedPassword = (params.isHashedPassword || this.isHashedPassword) ? password : KPR.MD5(password).toUpperCase();

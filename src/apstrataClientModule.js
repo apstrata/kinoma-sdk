@@ -114,12 +114,13 @@ ApstrataClient.prototype.callApi = function(params) {
 		useHeaderAuthentication = false
 	}	
 
-	var method = params.method ? params.method : "get";	
+	var method = params.method ? params.method : "get";
+	var signatureAndStamp = null;
 	var apstrataServiceUrl = "";
 	if (useHeaderAuthentication) {
 	
 		apstrataServiceUrl = this.getUnsignedURLToAPI(params.operation);
-		var signatureAndStamp = this.getSignature({"operation": params.operation, "useToken": true});
+		signatureAndStamp = this.getSignature({"operation": params.operation, "useToken": true});
 		apstrataServiceUrl += "&apsws.time=" + signatureAndStamp.timestamp;
 	}else {
 		apstrataServiceUrl = this.getSignedURLToAPI(params.operation);

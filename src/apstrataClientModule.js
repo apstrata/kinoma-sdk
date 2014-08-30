@@ -257,7 +257,7 @@ ApstrataClient.prototype.getSignature = function(params) {
 		
 		throw {
 			"errorCode": "MissingParameter",
-			"errorDetail":"You need to provide"
+			"errorDetail":"You need to provide an id"
 		}
 	};
 	

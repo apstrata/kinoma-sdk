@@ -283,7 +283,7 @@ ApstrataClient.prototype.getSignature = function(params) {
 	var timestamp = new Date().getTime() + "";
 	if (useToken) {
 	
-		var signature = encodeBase64(this.authKey + ";" + id + ";" + token);
+		var signature = encodeBase64(this.authKey + ":" + id + ":" + token);
 		return {"signature": signature, "timestamp": timestamp};
 	}else {
 	

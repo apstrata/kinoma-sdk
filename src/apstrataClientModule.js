@@ -30,13 +30,13 @@ var ApstrataClient = function(params) {
 		}
 	}
 	
-	if (!params.id) {
+	/*if (!params.id) {
 		
 		throw {
 			"errorCode": "MissingParameter",
 			"errorDetail":"You need to provide the Apstrata id of the caller"
 		}
-	}
+	}*/
 	
 	this.authKey = params.authKey;
 	this.url = params.url;
@@ -179,7 +179,7 @@ ApstrataClient.prototype.getSignedURLToAPI = function(operation) {
 
 	var authenticationSequence = "";
 	var timeStamp = "" + new Date().getTime();
-	if (this.id && this.password) {
+	if (this.password) {
 		
 		var signatureObject = this.getSignature({"operation": operation});
 		timeStamp = signatureObject.timestamp;
@@ -189,7 +189,7 @@ ApstrataClient.prototype.getSignedURLToAPI = function(operation) {
 	}
 	
 	var apstrataServiceUrl = this.url + "/" + this.authKey + "/" + operation;
-	var queryParamString = "?apsws.time=" + timeStamp + authenticationSequence + "&apsws.id=" + this.id + "&apsws.responseType=json";
+	var queryParamString = "?apsws.time=" + timeStamp + authenticationSequence + (this.id ? "&apsws.id=" + this.id : "") + "&apsws.responseType=json";
 	return apstrataServiceUrl + queryParamString;
 };
 
@@ -253,13 +253,13 @@ ApstrataClient.prototype.getSignature = function(params) {
 		}
 	};
 	
-	if (!this.id && !params.id) {
+	/*if (!this.id && !params.id) {
 		
 		throw {
 			"errorCode": "MissingParameter",
 			"errorDetail":"You need to provide an id"
 		}
-	};
+	};*/
 	
 	var id = this.id ? this.id : id;	
 	if (!this.password && !params.password && !this.token && !params.token) {
@@ -290,8 +290,13 @@ ApstrataClient.prototype.getSignature = function(params) {
 		var password = this.password ? this.password : params.password;		
 		var signature = "";
 		var valueToHash = "";
-		var hashedPassword = (params.isHashedPassword || this.isHashedPassword) ? password : KPR.MD5(password).toUpperCase();
-		valueToHash = timestamp + id + params.operation + hashedPassword;
+		if (!this.id) {
+			valueToHash = timestamp + this.authKey + params.operation + password;		
+		}else {
+		
+			var hashedPassword = (params.isHashedPassword || this.isHashedPassword) ? password : KPR.MD5(password).toUpperCase();		
+			valueToHash = timestamp + id + params.operation + hashedPassword;
+		}
 		signature = KPR.MD5(valueToHash);
 		return {"signature": signature, "timestamp": timestamp};
 	}

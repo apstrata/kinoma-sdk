@@ -33,7 +33,7 @@ key and the URL to the Apstrata cluster you will be using:
 
 ```javascript
 var URL = "https://wot.apstrata.com/apsdb/rest"; // Replace with appropriate URL if needed
-var AUTH_KEY = "A7307F650"; // Replace with your Authentication key
+var AUTH_KEY = "A7307F650"; // Replace with your Application key
 var ID = "myDevice"; // Replace with appropriate value
 var TOKEN = "A93890C3E486D4B6948E4B6956D8E54F"; // Replace with your authentication token
 var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "token":TOKEN, "url":URL});
@@ -46,11 +46,18 @@ to sign you calls to Apstrata instead of the authentication token
 
 ```javascript
 var URL = "https://wot.apstrata.com/apsdb/rest"; // Replace with appropriate URL if needed
-var AUTH_KEY = "A7307F650"; // Replace with your Authentication key
+var AUTH_KEY = "A7307F650"; // Replace with your Application key
 var ID = "myDevice"; // Replace with appropriate value
 var PWD = "myPassw0rd"; // Replace with your authentication token
 var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
 ```
+
+**Option 3. Use application owner's credentials
+var URL = "https://wot.apstrata.com/apsdb/rest"; // Replace with appropriate URL if needed
+var AUTH_KEY = "V71306F695"; // Replace with your Application key
+var PWD = "QE7B6AZ0D72A7771E3CA0A2FXDD65FBF"; // Replace with your Application secret
+
+
 Calling an Apstrata API
 ======================
 
@@ -88,6 +95,22 @@ try {
   	// Handle exception
 }
 ```
+**Note** In the above code, you can also use the alternative Apstrata notation for invoking a script by replacing
+the value of the "operation" field with "r/NameOfTheScript" and not passing "apsdb.scriptName" as a field of 
+"requestParams", example:
+
+'''javascript
+var params = {
+        	
+	"operation":"r/myScript", // We assume that we are calling our Apstrata script called myScript
+	"requestParams": { 
+			"someParam":"someValue", // We assume this is expected by "myScript"
+  },
+  "onSuccess": onSuccess,
+  "onFailure": onFailure
+};
+'''
+
 Other features
 ==============
 

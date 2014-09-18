@@ -53,6 +53,7 @@ var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password"
 ```
 
 **Note** Use application owner's credentials
+
 You can also sign your calls as the owner of the application. In that case you do not need to provide an id.
 var URL = "https://wot.apstrata.com/apsdb/rest"; // Replace with appropriate URL if needed
 var AUTH_KEY = "V71306F695"; // Replace with your Application key

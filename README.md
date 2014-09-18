@@ -52,7 +52,8 @@ var PWD = "myPassw0rd"; // Replace with your authentication token
 var apstrataClient = new ApstrataClient({"authKey":AUTH_KEY, "id":ID, "password":PWD, "url":URL});
 ```
 
-**Option 3. Use application owner's credentials
+**Note** Use application owner's credentials
+You can also sign your calls as the owner of the application. In that case you do not need to provide an id.
 var URL = "https://wot.apstrata.com/apsdb/rest"; // Replace with appropriate URL if needed
 var AUTH_KEY = "V71306F695"; // Replace with your Application key
 var PWD = "QE7B6AZ0D72A7771E3CA0A2FXDD65FBF"; // Replace with your Application secret
@@ -99,7 +100,7 @@ try {
 the value of the "operation" field with "r/NameOfTheScript" and not passing "apsdb.scriptName" as a field of 
 "requestParams", example:
 
-'''javascript
+```javascript
 var params = {
         	
 	"operation":"r/myScript", // We assume that we are calling our Apstrata script called myScript
@@ -109,7 +110,7 @@ var params = {
   "onSuccess": onSuccess,
   "onFailure": onFailure
 };
-'''
+```
 
 Other features
 ==============
